@@ -147,9 +147,7 @@ func (d *Dialer) DialContextWithConn(ctx context.Context, conn net.Conn, network
 		}
 
 		c := Conn{}
-		c.local = conn.LocalAddr()
-		c.remote, _ = NewAddress(address, d.config.T)
-		c.conn = conn
+		c.Conn = conn
 		cresult <- result{conn: &c}
 	}()
 

@@ -206,8 +206,7 @@ func (d *Dialer) DialContextWithConn(ctx context.Context, conn net.Conn, network
 
 		c := new(Conn)
 		c.bnd = bnd
-		c.remote, _ = NewAddress(address)
-		c.conn = conn
+		c.Conn = conn
 		cresult <- result{conn: c, err: reponse.Err()}
 	}()
 
