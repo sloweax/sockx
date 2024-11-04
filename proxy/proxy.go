@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"strings"
 
 	"github.com/sloweax/sockx/proxy/socks4"
 	"github.com/sloweax/sockx/proxy/socks5"
@@ -36,7 +37,7 @@ type ProxyDialer interface {
 
 func (p *ProxyInfo) ToDialer() (ProxyDialer, error) {
 	switch p.Protocol {
-	case "socks5", "socks5h", "unix-socks5", "unix-socks5h":
+	case "socks5", "socks5h":
 		return p.ToSOCKS5()
 	case "socks4", "socks4a":
 		return p.ToSOCKS4()
@@ -64,10 +65,9 @@ func (p *ProxyInfo) ToSOCKS5() (ProxyDialer, error) {
 	config.Methods = append(config.Methods, socks5.MethodNoAuth)
 
 	var network string
-	switch p.Protocol {
-	case "unix-socks5", "unix-socks5h":
+	if strings.Contains(p.Address, "/") {
 		network = "unix"
-	default:
+	} else {
 		network = "tcp"
 	}
 
