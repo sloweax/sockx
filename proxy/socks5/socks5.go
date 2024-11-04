@@ -48,7 +48,7 @@ type Addr struct {
 func NewAddress(address string) (Addr, error) {
 	host, portstr, err := net.SplitHostPort(address)
 	if err != nil {
-		return Addr{}, err
+		return Addr{atyp: AtypDomainName, addr: address}, err
 	}
 	a := Addr{}
 	a.addr = host

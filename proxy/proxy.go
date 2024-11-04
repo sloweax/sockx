@@ -36,7 +36,7 @@ type ProxyDialer interface {
 
 func (p *ProxyInfo) ToDialer() (ProxyDialer, error) {
 	switch p.Protocol {
-	case "socks5", "socks5h":
+	case "socks5", "socks5h", "unix-socks5", "unix-socks5h":
 		return p.ToSOCKS5()
 	case "socks4", "socks4a":
 		return p.ToSOCKS4()
@@ -63,9 +63,17 @@ func (p *ProxyInfo) ToSOCKS5() (ProxyDialer, error) {
 	config := socks5.Config{}
 	config.Methods = append(config.Methods, socks5.MethodNoAuth)
 
+	var network string
+	switch p.Protocol {
+	case "unix-socks5", "unix-socks5h":
+		network = "unix"
+	default:
+		network = "tcp"
+	}
+
 	switch len(p.Args) {
 	case 0:
-		return socks5.NewDialer("tcp", p.Address, p.KWArgs, config), nil
+		return socks5.NewDialer(network, p.Address, p.KWArgs, config), nil
 	default:
 		return nil, fmt.Errorf("%s: invalid proxy options", p.Protocol)
 	case 2:
@@ -74,7 +82,7 @@ func (p *ProxyInfo) ToSOCKS5() (ProxyDialer, error) {
 	case 1:
 		config.Username = p.Args[0]
 		config.Methods = append(config.Methods, socks5.MethodUserPass)
-		return socks5.NewDialer("tcp", p.Address, p.KWArgs, config), nil
+		return socks5.NewDialer(network, p.Address, p.KWArgs, config), nil
 	}
 
 }
