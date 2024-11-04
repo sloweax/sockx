@@ -63,7 +63,7 @@ func NewAddress(address string) (Addr, error) {
 		a.atyp = AtypDomainName
 		a.addr = host
 		if len(a.addr) > 255 {
-			return Addr{}, errors.New("socks5: hostname length is too big")
+			return Addr{}, errors.New("hostname length is too big")
 		}
 	} else if ip.To4() != nil {
 		a.atyp = AtypIPV4
@@ -107,7 +107,7 @@ func ReadAddress(r io.Reader) (Addr, error) {
 		}
 		a.addr = string(buf[:len])
 	default:
-		return Addr{}, errors.New("socks5: invalid address type")
+		return Addr{}, errors.New("invalid address type")
 	}
 
 	if _, err := io.ReadFull(r, buf[:2]); err != nil {
