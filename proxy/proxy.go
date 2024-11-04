@@ -1,6 +1,7 @@
 package proxy
 
 import (
+	"bufio"
 	"context"
 	"fmt"
 	"io"
@@ -21,7 +22,6 @@ type ProxyInfo struct {
 type Chain []ProxyInfo
 
 type ChainPicker interface {
-	Load(io.Reader) error
 	Add(Chain)
 	Next() Chain
 	All() []Chain
@@ -113,4 +113,41 @@ func (c Chain) ToDialer() (*Dialer, error) {
 	}
 
 	return New(dialers...), nil
+}
+
+func LoadPicker(p ChainPicker, r io.Reader) error {
+	scanner := bufio.NewScanner(r)
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if strings.HasPrefix(line, "#") {
+			continue
+		}
+
+		fields, err := parseFields(line)
+		if err != nil {
+			return err
+		}
+
+		if len(fields) == 0 {
+			continue
+		}
+
+		chain, err := parseChain(fields)
+		if err != nil {
+			return err
+		}
+
+		if len(chain) == 0 {
+			continue
+		}
+
+		p.Add(chain)
+	}
+
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+
+	return nil
 }

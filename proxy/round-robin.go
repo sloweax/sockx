@@ -1,9 +1,6 @@
 package proxy
 
 import (
-	"bufio"
-	"io"
-	"strings"
 	"sync"
 )
 
@@ -31,43 +28,6 @@ func (r *RoundRobin) Len() int {
 	r.mutex.RLock()
 	defer r.mutex.RUnlock()
 	return len(r.chains)
-}
-
-func (r *RoundRobin) Load(f io.Reader) error {
-	scanner := bufio.NewScanner(f)
-
-	for scanner.Scan() {
-		line := scanner.Text()
-		if strings.HasPrefix(line, "#") {
-			continue
-		}
-
-		fields, err := parseFields(line)
-		if err != nil {
-			return err
-		}
-
-		if len(fields) == 0 {
-			continue
-		}
-
-		chain, err := parseChain(fields)
-		if err != nil {
-			return err
-		}
-
-		if len(chain) == 0 {
-			continue
-		}
-
-		r.Add(chain)
-	}
-
-	if err := scanner.Err(); err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (r *RoundRobin) All() []Chain {

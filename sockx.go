@@ -37,7 +37,7 @@ func main() {
 	flag.BoolVar(&verbose, "verbose", false, "log additional info")
 	flag.Parse()
 
-	picker := proxy.RoundRobin{}
+	picker := &proxy.RoundRobin{}
 
 	for _, file := range proxy_files {
 		f, err := os.Open(file)
@@ -45,7 +45,7 @@ func main() {
 			log.Fatal(err)
 		}
 
-		if err := picker.Load(f); err != nil {
+		if err := proxy.LoadPicker(picker, f); err != nil {
 			log.Fatal(err)
 		}
 
@@ -54,8 +54,7 @@ func main() {
 
 	if len(proxy_files) == 0 {
 		log.Print("no specified config files, reading from stdin")
-		err := picker.Load(os.Stdin)
-		if err != nil {
+		if err := proxy.LoadPicker(picker, os.Stdin); err != nil {
 			log.Fatal(err)
 		}
 	}
