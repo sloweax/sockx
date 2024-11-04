@@ -84,8 +84,7 @@ func (d *Dialer) DialContext(ctx context.Context, network, address string) (net.
 	}
 
 	p = d.proxies[len(d.proxies)-1]
-	wtimeout, ok := p.KWArgs()["WriteTimeout"]
-	if ok {
+	if wtimeout, ok := p.KWArgs()["WriteTimeout"]; ok {
 		err = setTimeoutStr(conn, wtimeout, conn.SetWriteDeadline)
 		if err != nil {
 			conn.Close()
@@ -93,8 +92,7 @@ func (d *Dialer) DialContext(ctx context.Context, network, address string) (net.
 		}
 	}
 
-	rtimeout, ok := p.KWArgs()["ReadTimeout"]
-	if ok {
+	if rtimeout, ok := p.KWArgs()["ReadTimeout"]; ok {
 		err = setTimeoutStr(conn, rtimeout, conn.SetReadDeadline)
 		if err != nil {
 			conn.Close()
