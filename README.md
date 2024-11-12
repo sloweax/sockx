@@ -5,17 +5,16 @@ go install github.com/sloweax/sockx@latest # binary will likely be installed at 
 
 # Usage
 ```
-Usage of sockx
-  -a string
-    	listen on address (default "127.0.0.1:1080")
-  -c value
-    	load config file
-  -n string
-    	listen on network (tcp,unix) (default "tcp")
-  -r int
-    	if chain connection fails, retry with another one x times
-  -verbose
-    	log additional info
+usage: sockx [-h] [--verbose] [-r num] [-a addr[:port]] [-n tcp|unix] [file...]
+
+options:
+    -h, --help                 shows usage and exits
+    --verbose
+    -r, --retry num            if proxy connection fails, retry with another one
+                               up to num times
+    -a, --addr addr[:port]     listen on addr (default: 127.0.0.1:1080)
+    -n, --network tcp|unix     listen on network (default: tcp)
+    file                       load config from file
 ```
 
 # Example
@@ -24,7 +23,7 @@ $ cat proxies.conf
 socks5 1.2.3.4:123 user pass
 socks5 4.3.2.1:321
 
-$ sockx -c proxies.conf
+$ sockx proxies.conf
 
 $ for i in {1..10}; do curl ifconfig.me -x socks5://127.0.0.1:1080; echo; done
 1.2.3.4

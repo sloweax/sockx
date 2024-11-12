@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -14,32 +13,36 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/sloweax/argparse"
 	"github.com/sloweax/sockx/proxy"
 	"github.com/sloweax/sockx/proxy/socks5"
 )
 
-type StringArray []string
+type Config struct {
+	Verbose     bool
+	Retry       int      `name:"r" alias:"retry" metavar:"num" description:"if proxy connection fails, retry with another one up to num times"`
+	Addr        string   `name:"a" alias:"addr" metavar:"addr[:port]" description:"listen on addr (default: 127.0.0.1:1080)"`
+	Network     string   `name:"n" alias:"network" metavar:"tcp|unix" description:"listen on network (default: tcp)"`
+	ConfigFiles []string `type:"positional" name:"file" metavar:"file..." description:"load config from file"`
+}
 
 func main() {
 
-	var (
-		proxy_files StringArray
-		addr        string
-		verbose     bool
-		retry       int
-		network     string
-	)
+	config := Config{
+		Addr:    "127.0.0.1:1080",
+		Network: "tcp",
+	}
 
-	flag.Var(&proxy_files, "c", "load config file")
-	flag.StringVar(&addr, "a", "127.0.0.1:1080", "listen on address")
-	flag.IntVar(&retry, "r", 0, "if chain connection fails, retry with another one x times")
-	flag.StringVar(&network, "n", "tcp", "listen on network (tcp,unix)")
-	flag.BoolVar(&verbose, "verbose", false, "log additional info")
-	flag.Parse()
+	parser := argparse.FromStruct(&config)
+
+	if err := parser.ParseArgs(); err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
 
 	picker := &proxy.RoundRobin{}
 
-	for _, file := range proxy_files {
+	for _, file := range config.ConfigFiles {
 		f, err := os.Open(file)
 		if err != nil {
 			log.Fatal(err)
@@ -52,7 +55,7 @@ func main() {
 		f.Close()
 	}
 
-	if len(proxy_files) == 0 {
+	if len(config.ConfigFiles) == 0 {
 		log.Print("no specified config files, reading from stdin")
 		if err := proxy.LoadPicker(picker, os.Stdin); err != nil {
 			log.Fatal(err)
@@ -63,7 +66,7 @@ func main() {
 		log.Fatal("no loaded proxies")
 	}
 
-	if verbose {
+	if config.Verbose {
 		for i, ps := range picker.All() {
 			chain := make([]string, len(ps))
 			for i, p := range ps {
@@ -74,7 +77,7 @@ func main() {
 	}
 
 	server := socks5.NewServer()
-	err := server.Listen(network, addr)
+	err := server.Listen(config.Network, config.Addr)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -111,7 +114,7 @@ func main() {
 				return
 			}
 
-			for i := 0; i < retry+1; i++ {
+			for i := 0; i <= config.Retry; i++ {
 				var (
 					ctx    context.Context
 					cancel context.CancelFunc
@@ -186,13 +189,4 @@ func Bridge(a, b io.ReadWriteCloser) error {
 		err = nil
 	}
 	return err
-}
-
-func (a *StringArray) String() string {
-	return fmt.Sprintf("%v", *a)
-}
-
-func (a *StringArray) Set(value string) error {
-	*a = append(*a, value)
-	return nil
 }
