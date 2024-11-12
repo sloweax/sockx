@@ -43,9 +43,16 @@ func main() {
 	picker := &proxy.RoundRobin{}
 
 	for _, file := range config.ConfigFiles {
-		f, err := os.Open(file)
-		if err != nil {
-			log.Fatal(err)
+		var f *os.File
+		var err error
+
+		if file == "-" {
+			f = os.Stdin
+		} else {
+			f, err = os.Open(file)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 
 		if err := proxy.LoadPicker(picker, f); err != nil {
