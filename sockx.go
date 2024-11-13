@@ -20,7 +20,7 @@ import (
 
 type Config struct {
 	Verbose     bool
-	Retry       int      `name:"r" alias:"retry" metavar:"num" description:"if proxy connection fails, retry with another one up to num times"`
+	Retry       uint     `name:"r" alias:"retry" metavar:"num" description:"if proxy connection fails, retry with another one up to num times"`
 	Addr        string   `name:"a" alias:"addr" metavar:"addr[:port]" description:"listen on addr (default: 127.0.0.1:1080)"`
 	Network     string   `name:"n" alias:"network" metavar:"tcp|unix" description:"listen on network (default: tcp)"`
 	ConfigFiles []string `type:"positional" name:"file" metavar:"file..." description:"load config from file"`
@@ -121,7 +121,7 @@ func main() {
 				return
 			}
 
-			for i := 0; i <= config.Retry; i++ {
+			for i := uint(0); i <= config.Retry; i++ {
 				var (
 					ctx    context.Context
 					cancel context.CancelFunc
