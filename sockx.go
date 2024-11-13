@@ -35,6 +35,7 @@ func main() {
 	config := Config{
 		Addr:    "127.0.0.1:1080",
 		Network: "tcp",
+		Picker:  "round-robin",
 	}
 
 	parser := argparse.FromStruct(&config)
