@@ -23,8 +23,8 @@ type Config struct {
 	Verbose     bool
 	Retry       uint     `name:"r" alias:"retry" metavar:"num" description:"if proxy connection fails, retry with another one up to num times"`
 	Addr        string   `name:"a" alias:"addr" metavar:"addr[:port]" description:"listen on addr (default: 127.0.0.1:1080)"`
-	Network     string   `name:"n" alias:"network" metavar:"name" description:"listen on network. available options: tcp, unix (default: tcp)"`
-	Picker      string   `name:"p" alias:"picker" metavar:"name" description:"chain picker. available options: round-robin, random (default: round-robin)"`
+	Network     string   `name:"n" alias:"network" metavar:"network" description:"listen on network. available options: tcp, unix (default: tcp)"`
+	Picker      string   `name:"p" alias:"picker" metavar:"picker" description:"chain picker. available options: round-robin, random (default: round-robin)"`
 	ConfigFiles []string `type:"positional" name:"file" metavar:"file..." description:"load config from file"`
 }
 
