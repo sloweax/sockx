@@ -5,7 +5,7 @@ go install github.com/sloweax/sockx@latest # binary will likely be installed at 
 
 # Usage
 ```
-usage: sockx [-h] [--verbose] [-r num] [-a addr[:port]] [-n tcp|unix] [file...]
+usage: sockx [-h] [--verbose] [-r num] [-a addr[:port]] [-n name] [-p name] [file...]
 
 options:
     -h, --help                 shows usage and exits
@@ -13,7 +13,10 @@ options:
     -r, --retry num            if proxy connection fails, retry with another one
                                up to num times
     -a, --addr addr[:port]     listen on addr (default: 127.0.0.1:1080)
-    -n, --network tcp|unix     listen on network (default: tcp)
+    -n, --network name         listen on network. available options: tcp, unix (default:
+                               tcp)
+    -p, --picker name          chain picker. available options: round-robin, random
+                               (default: round-robin)
     file                       load config from file
 ```
 

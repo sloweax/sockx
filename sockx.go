@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math/rand"
 	"net"
 	"os"
 	"os/signal"
@@ -22,11 +23,14 @@ type Config struct {
 	Verbose     bool
 	Retry       uint     `name:"r" alias:"retry" metavar:"num" description:"if proxy connection fails, retry with another one up to num times"`
 	Addr        string   `name:"a" alias:"addr" metavar:"addr[:port]" description:"listen on addr (default: 127.0.0.1:1080)"`
-	Network     string   `name:"n" alias:"network" metavar:"tcp|unix" description:"listen on network (default: tcp)"`
+	Network     string   `name:"n" alias:"network" metavar:"name" description:"listen on network. available options: tcp, unix (default: tcp)"`
+	Picker      string   `name:"p" alias:"picker" metavar:"name" description:"chain picker. available options: round-robin, random (default: round-robin)"`
 	ConfigFiles []string `type:"positional" name:"file" metavar:"file..." description:"load config from file"`
 }
 
 func main() {
+
+	rand.Seed(time.Now().Unix())
 
 	config := Config{
 		Addr:    "127.0.0.1:1080",
@@ -40,7 +44,16 @@ func main() {
 		os.Exit(1)
 	}
 
-	picker := &proxy.RoundRobin{}
+	var picker proxy.ChainPicker
+
+	switch config.Picker {
+	case "round-robin":
+		picker = &proxy.RoundRobin{}
+	case "random":
+		picker = &proxy.Random{}
+	default:
+		log.Fatalf("unknown picker %q", config.Picker)
+	}
 
 	for _, file := range config.ConfigFiles {
 		var f *os.File
