@@ -8,6 +8,7 @@ import (
 	"net"
 	"strings"
 
+	"github.com/sloweax/sockx/proxy/shadowsocks"
 	"github.com/sloweax/sockx/proxy/socks4"
 	"github.com/sloweax/sockx/proxy/socks5"
 )
@@ -37,6 +38,8 @@ type ProxyDialer interface {
 
 func (p *ProxyInfo) ToDialer() (ProxyDialer, error) {
 	switch p.Protocol {
+	case "ss":
+		return p.ToShadowSocks()
 	case "socks5", "socks5h":
 		return p.ToSOCKS5()
 	case "socks4", "socks4a":
@@ -58,6 +61,33 @@ func (p *ProxyInfo) ToSOCKS4() (ProxyDialer, error) {
 		config.ID = p.Args[0]
 	}
 	return socks4.NewDialer("tcp", p.Address, p.KWArgs, config), nil
+}
+
+func (p *ProxyInfo) ToShadowSocks() (ProxyDialer, error) {
+	network := "tcp"
+	password := ""
+	method := "chacha20-ietf-poly1305"
+	switch len(p.Args) {
+	default:
+		return nil, fmt.Errorf("%s: invalid proxy options", p.Protocol)
+	case 2:
+		password = p.Args[1]
+		fallthrough
+	case 1:
+		method = p.Args[0]
+	case 0:
+	}
+
+	if strings.Contains(p.Address, "/") {
+		network = "unix"
+	}
+
+	dialer, err := shadowsocks.NewDialer(network, p.Address, p.KWArgs, method, password)
+	if err != nil {
+		return nil, err
+	}
+
+	return dialer, nil
 }
 
 func (p *ProxyInfo) ToSOCKS5() (ProxyDialer, error) {
@@ -84,7 +114,6 @@ func (p *ProxyInfo) ToSOCKS5() (ProxyDialer, error) {
 		config.Methods = append(config.Methods, socks5.MethodUserPass)
 		return socks5.NewDialer(network, p.Address, p.KWArgs, config), nil
 	}
-
 }
 
 func (p *ProxyInfo) String() string {

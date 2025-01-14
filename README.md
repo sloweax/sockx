@@ -79,3 +79,4 @@ set key "v a l u e" | socks5 127.0.0.1:1234 user 'my password'
 
 - socks5 / socks5h
 - socks4 / socks4a
+- ss (shadowsocks)
