@@ -44,9 +44,9 @@ func (s *Dialer) DialContextWithConn(ctx context.Context, conn net.Conn, network
 	}
 
 	c := make(chan result, 1)
-	defer close(c)
 
 	go func() {
+		defer close(c)
 		conn := s.cipher.StreamConn(conn)
 		if _, err := conn.Write(target); err != nil {
 			conn.Close()
